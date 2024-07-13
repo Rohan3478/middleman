@@ -28,10 +28,11 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { useDebounceCallback } from "usehooks-ts";
-import { checkUserNameValid } from "../../../actions/UsernameCheck";
+import { checkUserNameValid } from "../../../../actions/UsernameCheck";
 import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
-import { CreateAccount } from "../../../actions/UserCreate";
+import { CreateAccount } from "../../../../actions/UserCreate";
+import { useRouter } from "next/navigation";
 
 const Signup = () => {
   const [username, setUsername] = useState("");
@@ -39,7 +40,9 @@ const Signup = () => {
   const [isCheckingUserName, setIsCheckingUsername] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const debouncedUsername = useDebounceCallback(setUsername, 600);
+ 
   const { toast } = useToast();
+  const router = useRouter();
   const form = useForm<schemaSignup>({
     resolver: SignupResolver,
     defaultValues: initialSignupValue,
@@ -56,9 +59,10 @@ const Signup = () => {
         setIsSubmitting(false);
         return;
       }
-      const  verificationCode = Math.floor(1000 + Math.random() * 9000).toString();
+      const  verificationCode = Math.floor(1000 + Math.random() * 900000).toString();
       data.verificationCode = verificationCode;
       const res = await CreateAccount(data);
+      router.push(`/verify/${data.username}`)
       toast({
         title: "Success",
         description: res.msg,
