@@ -15,28 +15,46 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/toaster";
-import { VerifyEmail } from "../../../../../actions/VerifyEmail";
+import SetNewPassword from "../../../actions/SetNewPassword";
 
-const verifySchema = z.object({
-  code: z.string().min(6, "Verification code must be at least 6 characters"),
+const newPasswordSchema = z.object({
+  password: z.string().min(6, {
+    message: "Password must be at least 6 characters long",
+  }),
+  ConfirmPassword: z.string().min(6, {
+    message: "Password must be at least 6 characters long",
+  }),
 });
 
-export default function Verifyotp() {
+export default function ConfirmPassword({ username }: { username: string }) {
   const router = useRouter();
-  const params = useParams<{ username: string }>();
   const { toast } = useToast();
-  const form = useForm<z.infer<typeof verifySchema>>({
-    resolver: zodResolver(verifySchema),
+  const form = useForm<z.infer<typeof newPasswordSchema>>({
+    resolver: zodResolver(newPasswordSchema),
   });
 
-  const onSubmit = async (data: z.infer<typeof verifySchema>) => {
-    try {
-      await VerifyEmail({ username: params.username, otp: data.code });
-      router.push("/login");
+  const onSubmit = async (data: z.infer<typeof newPasswordSchema>) => {
+    if (data.password !== data.ConfirmPassword) {
       toast({
-        title: "Success",
-        description: "Account verified successfully",
+        title: "Password Mismatch",
+        description: "The fields of both Password is different",
       });
+      return;
+    }
+    try {
+      const res = await SetNewPassword(data);
+      if (res.status == false) {
+        toast({
+          title: "Failed",
+          description: "Something went wrong, Try agian",
+        });
+        return;
+      }
+      router.push('/');
+      toast({
+              title: "Success",
+              description: "Password Updated Successfully",
+            });
     } catch (error) {
       console.log(error);
       router.push("/login");
@@ -61,11 +79,23 @@ export default function Verifyotp() {
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
-              name="code"
+              name="password"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Verification Code</FormLabel>
+                  <FormLabel>Password</FormLabel>
+                  <Input {...field} />
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              name="ConfirmPassword"
+              control={form.control}
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Confirm Password</FormLabel>
                   <Input {...field} />
                   <FormMessage />
                 </FormItem>

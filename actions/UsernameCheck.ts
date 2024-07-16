@@ -13,6 +13,7 @@ export const checkUserNameValid = async (username: string) => {
     return {msg: res ? "Username already exists" : "Username Available"}
    }
    catch(error){
+    revalidatePath("/signup");
     console.log(error)
     throw error;
    }

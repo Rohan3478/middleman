@@ -15,28 +15,37 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/toaster";
-import { VerifyEmail } from "../../../../../actions/VerifyEmail";
+import { VerifyEmail } from "../../../actions/VerifyEmail";
+import { useState } from "react";
+import ConfirmPassword from "./ConfirmPassword";
 
 const verifySchema = z.object({
   code: z.string().min(6, "Verification code must be at least 6 characters"),
 });
 
-export default function Verifyotp() {
+export default function VerifyPasswordOtp({username}: {username: string}) {
   const router = useRouter();
-  const params = useParams<{ username: string }>();
   const { toast } = useToast();
+  const [goToConfirmPassword, setgoToConfirmPassword] = useState(false);
   const form = useForm<z.infer<typeof verifySchema>>({
     resolver: zodResolver(verifySchema),
   });
 
+  if(goToConfirmPassword){
+    return <ConfirmPassword username={username}/>;
+  }
+
   const onSubmit = async (data: z.infer<typeof verifySchema>) => {
     try {
-      await VerifyEmail({ username: params.username, otp: data.code });
-      router.push("/login");
-      toast({
-        title: "Success",
-        description: "Account verified successfully",
-      });
+      const res = await VerifyEmail({ username, otp: data.code });
+      if(res.status == false){
+        toast({
+          title: "Failed",
+          description: "Wrong OTP",
+        });  
+        return;
+      }
+      setgoToConfirmPassword(true);
     } catch (error) {
       console.log(error);
       router.push("/login");
