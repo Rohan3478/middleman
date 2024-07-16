@@ -1,5 +1,6 @@
 "use client";
 import { useForm } from "react-hook-form";
+import { getCookie } from 'cookies-next';
 import {
   LoginResolver,
   LoginSchema,
@@ -29,7 +30,7 @@ const Login = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [goToForgotPassword, setgoToForgotPassword] = useState(false);
-
+  getCookie('middleware');
   const { toast } = useToast();
   const router = useRouter();
   const form = useForm<LoginSchema>({

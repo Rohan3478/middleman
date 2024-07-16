@@ -29,10 +29,8 @@ async function LoginAccount(data: LoginSchema) {
 
         const cookieStore = cookies()
         const theme = cookieStore.set('middleman', token, {
-            path: '/',
             maxAge: 60 * 60 * 24,
             httpOnly: true,
-            sameSite: 'lax',
         });
 
         return {
