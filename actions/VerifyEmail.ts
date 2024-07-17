@@ -14,7 +14,7 @@ export const VerifyEmail = async ({ username, otp }: { username: string, otp: st
         }
 
         if (findUserExist.verificationCode !== otp) {
-            return { msg: "Invalid OTP" };
+            return { msg: "Invalid OTP", status: false };
         }
         const verificationCode = Math.floor(1000 + Math.random() * 900000).toString();
         const res = await prisma.user.update({
@@ -26,10 +26,11 @@ export const VerifyEmail = async ({ username, otp }: { username: string, otp: st
                 verificationCode: verificationCode
             }
         })
-        revalidatePath('/verify');
-        return { msg: "Email Verified" };
+        revalidatePath('/login');
+        return { msg: "Email Verified", status: true };
     } catch (error) {
         console.log(error);
-        return { msg: "User not found" };
+        revalidatePath('/login');
+        return { msg: "User not found", status: false };
     }
 }

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
+import GlobalContextProvider from "@/helpers/ContextProvider";
 
 const poppins = Poppins({ subsets: ['latin'], weight: ['400', '500'] });
 
@@ -15,8 +16,10 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
+    <html lang="en" suppressHydrationWarning={true}>
+      <GlobalContextProvider>
       <body className={poppins.className}>{children}</body>
+      </GlobalContextProvider>
     </html>
   );
 }

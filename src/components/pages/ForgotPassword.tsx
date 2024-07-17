@@ -1,9 +1,8 @@
 "use client";
-
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useForm } from "react-hook-form";
 import * as z from "zod";
 import {
@@ -15,31 +14,41 @@ import {
 } from "@/components/ui/form";
 import { Button } from "@/components/ui/button";
 import { Toaster } from "@/components/ui/toaster";
-import { VerifyEmail } from "../../../../../actions/VerifyEmail";
+import forgotpassword from "../../../actions/forgotpassword";
+import { useState } from "react";
+import VerifyPasswordOtp from "./VerifyNewPasswordOtp";
 
-const verifySchema = z.object({
-  code: z.string().min(6, "Verification code must be at least 6 characters"),
+const verifyEmail = z.object({
+  email: z.string().email(),
 });
 
-export default function Verifyotp() {
+export default function ForgotPassword() {
   const router = useRouter();
-  const params = useParams<{ username: string }>();
   const { toast } = useToast();
-  const form = useForm<z.infer<typeof verifySchema>>({
-    resolver: zodResolver(verifySchema),
+  const [goToNewPasswordOtp, setgoToNewPasswordOtp] = useState(false);
+  const [myusername, setmyusername] = useState("");
+  const form = useForm<z.infer<typeof verifyEmail>>({
+    resolver: zodResolver(verifyEmail),
   });
 
-  const onSubmit = async (data: z.infer<typeof verifySchema>) => {
+  if(goToNewPasswordOtp){
+    return <VerifyPasswordOtp username={myusername}/>
+  }
+
+  const onSubmit = async (data: z.infer<typeof verifyEmail>) => {
     try {
-      await VerifyEmail({ username: params.username, otp: data.code });
-      router.push("/login");
-      toast({
-        title: "Success",
-        description: "Account verified successfully",
-      });
+      const res:any = await forgotpassword(data);
+      if (res.status === false) {
+        toast({
+          title: "Failed",
+          description: res.msg,
+        });
+        return;
+      }
+      setmyusername(res.username);
+      setgoToNewPasswordOtp(true);
     } catch (error) {
       console.log(error);
-      router.push("/login");
       toast({
         title: "Error",
         description: "Something went wrong",
@@ -54,24 +63,26 @@ export default function Verifyotp() {
       <div className="w-full max-w-md p-8 space-y-8 bg-white rounded-lg shadow-md">
         <div className="text-center">
           <h1 className="text-4xl font-extrabold tracking-tight lg:text-5xl mb-6">
-            Verify Your Account
+            Email Confirmation
           </h1>
-          <p className="mb-4">Enter the verification code sent to your email</p>
+          <p className="mb-4">
+            Enter your email you have setup account previously
+          </p>
         </div>
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
             <FormField
-              name="code"
+              name="email"
               control={form.control}
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Verification Code</FormLabel>
+                  <FormLabel>Enter your email</FormLabel>
                   <Input {...field} />
                   <FormMessage />
                 </FormItem>
               )}
             />
-            <Button type="submit">Verify</Button>
+            <Button type="submit">Next</Button>
           </form>
         </Form>
       </div>

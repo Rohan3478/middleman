@@ -33,6 +33,7 @@ import { Toaster } from "@/components/ui/toaster";
 import { useToast } from "@/components/ui/use-toast";
 import { CreateAccount } from "../../../../actions/UserCreate";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
 
 const Signup = () => {
   const [username, setUsername] = useState("");
@@ -213,6 +214,7 @@ const Signup = () => {
             )}
           </Button>
         </form>
+        <Link href="/login" className="text-blue-500">Already have an account?</Link>
       </Form>
     </div>
   );
